@@ -31,7 +31,7 @@ def draw_parkings(img: np.array):
         cv2.putText(empty_img, f"{p_space_id}", (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1,
                     (255, 255, 255), 2)
 
-        cv2.imshow("sdf", empty_img)
+        cv2.imshow("ParkingView", empty_img)
 
 
 def check_parking_space(img: np.array, parking_id: int, center_points: List[Tuple[int, int]], thickness=4):
