@@ -10,3 +10,6 @@ https://github.com/AlexeyAB/darknet/tree/master/cfg
 
 # <h3>Mobilenet</h3>
 ![parking2](https://user-images.githubusercontent.com/73878161/196278264-47b37bc9-7717-4c38-b430-a92f11152f1f.gif)
+
+
+![parking_view](https://user-images.githubusercontent.com/73878161/196278890-5f8dfc45-4487-442e-9381-5c2feb502e0a.jpg)
