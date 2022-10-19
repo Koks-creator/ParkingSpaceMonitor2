@@ -14,10 +14,31 @@ for index, pos in enumerate(pos_list):
     parking_spaces[index] = {"pos": pos, "color": None, "Free": None}
 
 
-def draw_parkings(img: np.array):
-    h, w, _ = img.shape
-    empty_img = np.zeros((h, w, 3), np.uint8)
+def draw_parking_view_prettified(empty_img: np.array, space_w: int, space_h: int, start_x: int, start_y: int):
 
+    off_x = 0
+    off_y = 0
+    per_row = 640 // (start_x + space_w)
+
+    for index, p_space in enumerate(parking_spaces.items()):
+        p_space_id, p_data = p_space
+        pos, color, free = p_data.values()
+
+        x1, y1 = start_x + off_x, start_y + off_y
+        x2, y2 = x1 + space_w, y1 + space_h
+        cx, cy = int(x1 + (space_w // 2)), int(y1 + (space_h // 2))
+
+        cv2.rectangle(empty_img, (x1, y1), (x2, y2), color, -1)
+        cv2.putText(empty_img, f"{p_space_id}", (cx - 10, cy + 10), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                    (255, 255, 255), 2)
+
+        off_x += start_x + space_w
+        if index == per_row - 1:
+            off_y += space_h + 25
+            off_x = 0
+
+
+def draw_parking_view(empty_img: np.array):
     for p_space in parking_spaces.items():
         p_space_id, p_data = p_space
         pos, color, free = p_data.values()
@@ -30,8 +51,6 @@ def draw_parkings(img: np.array):
         cv2.fillPoly(empty_img, [pos], color)
         cv2.putText(empty_img, f"{p_space_id}", (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1,
                     (255, 255, 255), 2)
-
-        cv2.imshow("ParkingView", empty_img)
 
 
 def check_parking_space(img: np.array, parking_id: int, center_points: List[Tuple[int, int]], thickness=4):
@@ -81,6 +100,10 @@ while True:
     if success is False:
         break
 
+    h, w, _ = img.shape
+    empty_reg_view = np.zeros((h, w, 3), np.uint8)
+    empty_pret_view = np.zeros((480, 640, 3), np.uint8)
+
     detections = od.detect(img, draw=True, allowed_classes=[3, 8])
     if detections:
         center_points = []
@@ -99,7 +122,8 @@ while True:
         for parking_id in parking_spaces.keys():
             check_parking_space(img, parking_id, center_points)
 
-    draw_parkings(img)
+    draw_parking_view(empty_reg_view)
+    draw_parking_view_prettified(empty_pret_view, space_w=100, space_h=150, start_x=50, start_y=50)
 
     ctime = time()
     fps = int(1 / (ctime - ptime))
@@ -108,8 +132,13 @@ while True:
     taken_parks = [data["Free"] for data in parking_spaces.values()].count(False)
     cv2.putText(img, f"FPS: {fps}", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
     cv2.putText(img, f"Free: {taken_parks}/{parking_spaces_num}", (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+    cv2.putText(empty_reg_view, f"Free: {taken_parks}/{parking_spaces_num}", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+    cv2.putText(empty_pret_view, f"Free: {taken_parks}/{parking_spaces_num}", (50, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
     cv2.imshow("Res", img)
+    cv2.imshow("ParkingSpacesView", empty_reg_view)
+    cv2.imshow("PrettfiedParkingSpacesView", empty_pret_view)
+
     key = cv2.waitKey(1)
     if key == 27:
         break
